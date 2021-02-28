@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir -p ./components/Query
 cd ./components/Query
 touch index.js
@@ -28,7 +30,7 @@ const $1Error = () => {
 
     </div>
   )
-}
+};
 
 export default $1Error;" >> $1Error.jsx
 
@@ -40,7 +42,7 @@ const $1Loading = () => {
 
     </div>
   )
-}
+};
 
 export default $1Loading;" >> $1Loading.jsx
 
@@ -52,13 +54,32 @@ const $1Success = () => {
 
     </div>
   )
-}
+};
 
 export default $1Success;" >> $1Success.jsx
 
 if [ -s index.js ]
 then
-echo "not empty"
+sed -i 's/{ /{\n\t/g; s/, /,\n\t/g; s/ };/,\n};/g;' index.js
+grep ',' index.js > exports.txt
+printf "  $1,
+  $1Error,
+  $1Loading,
+  $1Success," >> exports.txt
+sort -o exports.txt exports.txt
+grep 'import' index.js > imports.txt
+printf "import $1 from './$1';
+import $1Error from './$1Error';
+import $1Loading from './$1Loading';
+import $1Success from './$1Success';" >> imports.txt
+sort -o imports.txt imports.txt
+cp imports.txt index.js
+printf "
+export {
+" >> index.js
+cat exports.txt >> index.js
+printf "};" >> index.js
+rm -f imports.txt exports.txt
 else
 printf "import $1 from './$1';
 import $1Error from './$1Error';
